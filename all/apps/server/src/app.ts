@@ -32,22 +32,32 @@ class Errors implements ExceptionFilter {
   catch(error: unknown, host: ArgumentsHost) {
     const res = host.switchToHttp().getResponse<Response>(),
       req = host.switchToHttp().getRequest<Request>();
-    const status = error instanceof HttpException ? error.getStatus() : 500;
+    const parserType = (error as { type?: unknown } | null)?.type;
+    const status =
+      error instanceof HttpException
+        ? error.getStatus()
+        : parserType === "entity.too.large"
+          ? 413
+          : parserType === "entity.parse.failed"
+            ? 400
+            : 500;
     // [CONTRACT:C-04] 全部错误具有服务端 requestId；内部异常不返回数据库/凭证/对象存储细节。
     const message =
       error instanceof HttpException
         ? error.message
-        : "服务暂时不可用，请稍后重试";
+        : status === 413
+          ? "请求内容过大，请缩小文件或文本后重试"
+          : status === 400
+            ? "JSON 格式无效，请检查请求内容"
+            : "服务暂时不可用，请稍后重试";
     if (status >= 500) console.error("服务错误：" + res.locals.requestId);
-    res
-      .status(status)
-      .json({
-        error: {
-          code: "HTTP_" + status,
-          message,
-          requestId: res.locals.requestId || randomUUID(),
-        },
-      });
+    res.status(status).json({
+      error: {
+        code: "HTTP_" + status,
+        message,
+        requestId: res.locals.requestId || randomUUID(),
+      },
+    });
   }
 }
 export async function createApp(env: NodeJS.ProcessEnv = process.env) {
@@ -80,15 +90,13 @@ export async function createApp(env: NodeJS.ProcessEnv = process.env) {
       !["GET", "HEAD", "OPTIONS"].includes(req.method) &&
       req.headers.origin !== config.adminOrigin
     ) {
-      res
-        .status(403)
-        .json({
-          error: {
-            code: "CSRF_ORIGIN",
-            message: "请求来源不允许",
-            requestId: res.locals.requestId,
-          },
-        });
+      res.status(403).json({
+        error: {
+          code: "CSRF_ORIGIN",
+          message: "请求来源不允许",
+          requestId: res.locals.requestId,
+        },
+      });
       return;
     }
     next();

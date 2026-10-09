@@ -1,6 +1,10 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { demo } from "../stores/demo";
+import { computed, ref } from "vue";
+import { demo, saveDemo } from "../stores/demo";
+import { saveLocalImage } from "../domain/local-asset";
+import { ElMessage } from "element-plus";
+const localPicker = ref<HTMLInputElement>(),
+  uploading = ref(false);
 const props = defineProps<{ modelValue?: string; assetId?: string }>();
 const emit = defineEmits<{
   "update:modelValue": [value: string | undefined];
@@ -40,6 +44,24 @@ function choose(id: string | undefined) {
     image && !image.id.startsWith("example:") ? image.id : undefined,
   );
 }
+async function uploadLocal(event: Event) {
+  const input = event.target as HTMLInputElement,
+    file = input.files?.[0];
+  if (!file || uploading.value) return;
+  uploading.value = true;
+  try {
+    const asset = await saveLocalImage(file, (asset) =>
+      saveDemo((data) => data.assets.unshift(asset)),
+    );
+    choose(asset.id);
+    ElMessage.success("图片已加入本地演示库并选中");
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : "图片保存失败");
+  } finally {
+    input.value = "";
+    uploading.value = false;
+  }
+}
 </script>
 <template>
   <div class="media-picker">
@@ -57,7 +79,20 @@ function choose(id: string | undefined) {
     ><img v-if="modelValue" :src="modelValue" alt="所选图片预览" /><span
       v-else
       class="field-help"
-      >先在图片资源中上传，也可使用内置示例。</span
+      >选择已有本地图片或内置示例，也可在下方添加。</span
+    >
+    <el-button size="small" :loading="uploading" @click="localPicker?.click()"
+      >添加本地演示图片</el-button
+    >
+    <input
+      ref="localPicker"
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      hidden
+      @change="uploadLocal"
+    />
+    <small class="field-help"
+      >供题目、课程和选手演示使用，仅保存在当前浏览器；首页服务图片请到图片资源上传。</small
     >
   </div>
 </template>

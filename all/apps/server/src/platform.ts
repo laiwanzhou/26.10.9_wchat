@@ -17,11 +17,13 @@ import type { ServerConfig } from "./config.js";
 import { ObjectStorage } from "./storage.js";
 import { verifyPassword } from "./password.js";
 import { normalizeImage } from "./image.js";
+import { ObjectCleanup } from "./object-cleanup.js";
 const hash = (token: string) =>
   createHash("sha256").update(token).digest("hex");
 export class PlatformService {
   readonly db: PrismaClient;
   private storage: ObjectStorage;
+  private cleanup: ObjectCleanup;
   private attempts = new Map<string, { count: number; expires: number }>();
   private timer?: NodeJS.Timeout;
   constructor(readonly config: ServerConfig) {
@@ -29,6 +31,19 @@ export class PlatformService {
       datasources: { db: { url: config.databaseUrl } },
     });
     this.storage = new ObjectStorage(config);
+    this.cleanup = new ObjectCleanup({
+      readBatch: (after, limit) =>
+        this.db.objectDeletion.findMany({
+          where: after ? { objectKey: { gt: after } } : undefined,
+          orderBy: { objectKey: "asc" },
+          take: limit,
+        }),
+      deleteObject: (key) => this.storage.delete(key),
+      deleteRecord: async (key) => {
+        await this.db.objectDeletion.deleteMany({ where: { objectKey: key } });
+      },
+      onFailure: () => console.error("图片对象单项清理失败，记录保留待重试"),
+    });
   }
   async onModuleInit() {
     await this.db.$connect();
@@ -41,6 +56,7 @@ export class PlatformService {
   }
   async onModuleDestroy() {
     clearInterval(this.timer);
+    await this.cleanup.stop();
     await this.db.$disconnect();
     this.storage.close();
   }
@@ -256,12 +272,7 @@ export class PlatformService {
     return { deleted: true };
   }
   private async cleanObjects() {
-    for (const row of await this.db.objectDeletion.findMany({ take: 100 })) {
-      await this.storage.delete(row.objectKey);
-      await this.db.objectDeletion.deleteMany({
-        where: { objectKey: row.objectKey },
-      });
-    }
+    await this.cleanup.run();
   }
   async ready() {
     try {

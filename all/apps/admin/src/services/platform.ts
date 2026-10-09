@@ -21,8 +21,9 @@ export async function api(
     throw error;
   }
 }
+// [CONTRACT:C-04] me 的 401 由守卫在代次检查后处理；避免旧查询先派发全局事件，踢掉较新的已认证页面。
 export const getIdentity = async () =>
-  decodeIdentity(await api("/api/admin/auth/me"));
+  decodeIdentity(await client("/api/admin/auth/me"));
 export const loginService = async (username: string, password: string) =>
   decodeIdentity(
     await api("/api/admin/auth/login", {

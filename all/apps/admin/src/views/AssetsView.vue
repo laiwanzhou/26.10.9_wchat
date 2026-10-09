@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, onMounted, onUnmounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { demo, saveDemo, newId } from "../stores/demo";
-import { validateImage } from "../domain/local-repository";
+import { demo, saveDemo } from "../stores/demo";
+import { saveLocalImage } from "../domain/local-asset";
+import { createLatestLoader } from "../domain/latest-loader";
 import AppIcon from "../components/AppIcon.vue";
 import { assetReferences } from "../domain/content-model";
 import {
@@ -15,17 +16,16 @@ import type { ImageAsset } from "../../../../shared/contracts";
 const remoteAssets = ref<ImageAsset[]>([]),
   loading = ref(false),
   problem = ref("");
-async function load() {
-  loading.value = true;
-  problem.value = "";
-  try {
-    remoteAssets.value = await getServiceAssets();
-  } catch (error) {
-    problem.value = error instanceof Error ? error.message : "读取失败";
-  } finally {
-    loading.value = false;
-  }
-}
+const loader = createLatestLoader({
+  fetch: getServiceAssets,
+  apply: (state) => {
+    loading.value = state.loading;
+    problem.value = state.errorMessage;
+    if (state.value !== undefined) remoteAssets.value = state.value;
+  },
+});
+const load = () => loader.load();
+onUnmounted(() => loader.dispose());
 onMounted(() => {
   if (serviceMode) void load();
 });
@@ -38,14 +38,6 @@ const assets = computed(() =>
     a.name.includes(keyword.value.trim()),
   ),
 );
-function dataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("读取图片失败"));
-    reader.readAsDataURL(file);
-  });
-}
 async function upload(event: Event) {
   // [PRE-LAUNCH:PL-04] 前端文件头/容量校验只用于预览；上线替换为 server 上传、解码校验、HTTPS URL 和引用权限。
   const input = event.target as HTMLInputElement,
@@ -59,24 +51,10 @@ async function upload(event: Event) {
       ElMessage.success("图片已上传至服务端");
       return;
     }
-    const mime = validateImage(
-      new Uint8Array(await file.slice(0, 12).arrayBuffer()),
-      file.size,
+    await saveLocalImage(file, (asset) =>
+      saveDemo((data) => data.assets.unshift(asset)),
     );
-    const url = await dataUrl(file);
-    if (
-      saveDemo((d) =>
-        d.assets.unshift({
-          id: newId(),
-          name: file.name,
-          url,
-          mime,
-          size: file.size,
-          createdAt: new Date().toLocaleDateString("sv-SE"),
-        }),
-      )
-    )
-      ElMessage.success("图片已保存到当前浏览器");
+    ElMessage.success("图片已保存到当前浏览器");
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : "图片读取失败");
   } finally {

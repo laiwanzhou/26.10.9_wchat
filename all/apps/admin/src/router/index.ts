@@ -2,6 +2,8 @@ import { createRouter, createWebHashHistory } from "vue-router";
 import { isSignedIn } from "../stores/demo";
 import AdminLayout from "../layouts/AdminLayout.vue";
 import { serviceMode, getIdentity } from "../services/platform";
+import { createServiceGuard } from "../domain/session-guard";
+import { authConnectionIssue } from "../stores/auth-connection";
 const router = createRouter({
   history: createWebHashHistory(),
   scrollBehavior: () => ({ top: 0, left: 0 }),
@@ -71,15 +73,18 @@ const router = createRouter({
     { path: "/:pathMatch(.*)*", redirect: "/dashboard" },
   ],
 });
+const serviceGuard = createServiceGuard({
+  verify: getIdentity,
+  unavailable: (path, message) => {
+    authConnectionIssue.value = { path, message };
+  },
+  clear: () => {
+    authConnectionIssue.value = null;
+  },
+});
 router.beforeEach(async (to) => {
   if (serviceMode) {
-    if (to.path === "/login") return;
-    try {
-      await getIdentity();
-      return;
-    } catch {
-      return "/login";
-    }
+    return serviceGuard(to);
   }
   if (to.path !== "/login" && !isSignedIn()) return "/login";
   if (to.path === "/login" && isSignedIn()) return "/dashboard";

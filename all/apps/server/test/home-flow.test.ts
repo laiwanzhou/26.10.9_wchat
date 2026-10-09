@@ -174,6 +174,20 @@ test(
           413,
         );
       });
+      await t.test(
+        "R-05 过大 JSON 返回 413 与追踪编号，不能误报服务内部故障",
+        async () => {
+          const response = await request("/api/admin/home", "PUT", {
+            title: "x",
+            subtitle: "x".repeat(70 * 1024),
+            bannerAssetId: null,
+          });
+          assert.equal(response.status, 413);
+          const body = await response.json();
+          assert.equal(body.error.code, "HTTP_413");
+          assert.ok(body.error.requestId);
+        },
+      );
       const bytes = await readFile(
         new URL(
           "../../miniprogram/src/assets/questions/lake.png",
@@ -322,6 +336,63 @@ test(
               .length,
             0,
           );
+        },
+      );
+      await t.test(
+        "R-04 真实删除接口中单项存储失败不阻塞下一张图片清理",
+        async () => {
+          const { PlatformService } = await import(
+            "../dist/apps/server/src/platform.js"
+          );
+          const service = app!.get(PlatformService);
+          async function uploadFixture(name: string) {
+            const body = new FormData();
+            body.append("file", new Blob([bytes], { type: "image/png" }), name);
+            const response = await request("/api/admin/assets", "POST", body);
+            assert.equal(response.status, 201);
+            return (await response.json()).data.id as string;
+          }
+          const fixtureIds = [
+            await uploadFixture("first.png"),
+            await uploadFixture("second.png"),
+          ];
+          const [bad, good] = await service.db.imageAsset.findMany({
+            where: { id: { in: fixtureIds } },
+            orderBy: { objectKey: "asc" },
+          });
+          const badId = bad.id,
+            goodId = good.id;
+          // 故障只注入独立测试实例的存储删除边界；图片及队列仍使用真实 PostgreSQL/S3。
+          const storage = (service as any).storage,
+            remove = storage.delete.bind(storage);
+          storage.delete = async (key: string) => {
+            if (key === bad.objectKey) throw Error("测试单项失败");
+            return remove(key);
+          };
+          try {
+            assert.equal(
+              (await request("/api/admin/assets/" + badId, "DELETE")).status,
+              200,
+            );
+            assert.equal(
+              (await request("/api/admin/assets/" + goodId, "DELETE")).status,
+              200,
+            );
+            assert.ok(
+              await service.db.objectDeletion.findUnique({
+                where: { objectKey: bad.objectKey },
+              }),
+            );
+            assert.equal(
+              await service.db.objectDeletion.findUnique({
+                where: { objectKey: good.objectKey },
+              }),
+              null,
+            );
+            await assert.rejects(storage.get(good.objectKey));
+          } finally {
+            storage.delete = remove;
+          }
         },
       );
     } finally {
