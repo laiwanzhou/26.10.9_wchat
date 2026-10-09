@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.audit/
+.cache/
+.env
+.env.*
+!.env.example
+project.private.config.json
+*.log
+*.pem
+*.key
+*.p12
+.DS_Store
+Thumbs.db
+.runtime/
+coverage/

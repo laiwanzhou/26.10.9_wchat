@@ -1,0 +1,348 @@
+.setup-intro {
+  display: flex;
+  align-items: center;
+  gap: 23px;
+  padding: 28px 30px;
+  border: 1px solid #dce7d4;
+  background: #eaf0e2;
+  border-radius: 12px;
+  margin-bottom: 25px;
+}
+.setup-intro-icon {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  background: #dce8cf;
+  color: #799963;
+  border-radius: 17px;
+  flex-shrink: 0;
+}
+.setup-intro h2 {
+  font-size: 20px;
+  font-weight: 500;
+  color: #5f7b4c;
+  margin: 0 0 12px;
+}
+.setup-intro p {
+  font-size: 12px;
+  color: #94a182;
+  line-height: 1.9;
+  margin: 0;
+}
+.setup-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  margin-bottom: 24px;
+}
+.setup-module-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.setup-module h2 {
+  font-size: 18px;
+  font-weight: 550;
+  margin: 25px 0 12px;
+}
+.setup-module > p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #96a28c;
+  min-height: 67px;
+}
+.setup-metrics {
+  background: #f7f9f2;
+  border: 1px solid #e9ede1;
+  border-radius: 8px;
+  padding: 13px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 21px 0;
+}
+.setup-metrics > span {
+  font-size: 11px;
+  color: #a0ad94;
+}
+.setup-metrics strong {
+  font-size: 24px;
+  font-weight: 500;
+  color: #7d955f;
+}
+.setup-module ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 26px;
+}
+.setup-module li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 11px;
+  color: #9ba88d;
+  line-height: 2.6;
+}
+.setup-module li svg {
+  color: #acba9b;
+}
+.setup-main-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 7px;
+  background: #edf4e5;
+  border: 1px solid #dfe9d3;
+  color: #749359;
+  font-size: 12px;
+  padding: 13px;
+}
+.setup-main-link:hover {
+  background: #e3efd8;
+}
+.setup-secondary-link {
+  display: block;
+  text-align: center;
+  font-size: 11px;
+  color: #a2b093;
+  margin-top: 17px;
+}
+.setup-common > div:nth-child(2) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.setup-common a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 17px;
+  border: 1px solid #e6ecde;
+  border-radius: 9px;
+}
+.setup-common a > span:nth-child(2) {
+  flex: 1;
+}
+.setup-common strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+}
+.setup-common small {
+  display: block;
+  font-size: 10px;
+  color: #a4b196;
+  margin-top: 7px;
+}
+.setup-common a > svg {
+  color: #a3b48f;
+}
+.pending-module-hero {
+  text-align: center;
+  padding: 40px 20px;
+  margin-bottom: 25px;
+}
+.pending-large-icon {
+  display: grid;
+  place-items: center;
+  width: 85px;
+  height: 85px;
+  border-radius: 24px;
+  margin: 0 auto 22px;
+}
+.pending-module-hero h2 {
+  font-size: 22px;
+  font-weight: 500;
+  margin: 22px 0 15px;
+  color: #68804f;
+}
+.pending-module-hero p {
+  font-size: 12px;
+  color: #a0af8e;
+  margin-bottom: 26px;
+}
+.pending-demo-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  background: #177e6b;
+  color: white;
+  padding: 13px 22px;
+  border-radius: 7px;
+  font-size: 12px;
+}
+.pending-requirements article {
+  display: flex;
+  align-items: center;
+  gap: 19px;
+  border-bottom: 1px solid #eef1e7;
+  padding: 19px 0;
+}
+.pending-requirements article:last-child {
+  border: 0;
+}
+.requirement-index {
+  font-size: 16px;
+  color: #b1bea1;
+  padding: 12px;
+  background: #f3f7ec;
+  border-radius: 9px;
+}
+.pending-requirements article > div {
+  flex: 1;
+}
+.pending-requirements h4 {
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0 0 10px;
+}
+.pending-requirements p {
+  font-size: 11px;
+  color: #a1ad94;
+  margin: 0;
+  line-height: 1.8;
+}
+.requirement-status {
+  font-size: 10px;
+  color: #b3bd9f;
+  white-space: nowrap;
+}
+.pending-next {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 23px 25px;
+  background: #edf3e6;
+  border: 1px solid #dfe9d3;
+  border-radius: 10px;
+  margin-top: 23px;
+  color: #8ba46f;
+}
+.pending-next strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+.pending-next p {
+  font-size: 11px;
+  color: #a1af90;
+  line-height: 1.8;
+  margin: 10px 0 0;
+}
+.pending-notice {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fbf6eb;
+  border: 1px solid #eee4ce;
+  padding: 17px 20px;
+  border-radius: 10px;
+  margin-bottom: 27px;
+  color: #a58f5f;
+}
+.pending-notice > svg {
+  flex-shrink: 0;
+}
+.pending-notice > div {
+  flex: 1;
+}
+.pending-notice strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+.pending-notice p {
+  font-size: 10px;
+  color: #b4a585;
+  line-height: 1.8;
+  margin: 7px 0 0;
+}
+.pending-notice > a {
+  font-size: 11px;
+  white-space: nowrap;
+  color: #aa955e;
+}
+.sidebar {
+  overflow-y: auto;
+}
+.sidebar nav {
+  flex-shrink: 0;
+}
+.sidebar-note {
+  margin-top: 30px;
+}
+.sidebar-user {
+  flex-shrink: 0;
+}
+@media (min-height: 850px) {
+  .sidebar-note {
+    margin-top: auto;
+  }
+}
+@media (max-width: 1050px) {
+  .setup-grid {
+    grid-template-columns: 1fr;
+  }
+  .setup-module > p {
+    min-height: 0;
+  }
+  .setup-common > div:nth-child(2) {
+    grid-template-columns: 1fr;
+  }
+  .setup-module h2 {
+    margin-top: 20px;
+  }
+  .setup-module ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 25px;
+  }
+}
+@media (max-width: 640px) {
+  .setup-intro {
+    padding: 22px 18px;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .setup-intro-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+  .setup-intro h2 {
+    font-size: 17px;
+    line-height: 1.6;
+  }
+  .setup-intro p {
+    font-size: 11px;
+  }
+  .pending-notice {
+    flex-wrap: wrap;
+    padding: 15px;
+    gap: 12px;
+  }
+  .pending-notice > div {
+    flex-basis: calc(100% - 40px);
+  }
+  .pending-notice > a {
+    margin-left: 33px;
+  }
+  .pending-module-hero h2 {
+    font-size: 20px;
+  }
+  .pending-requirements article {
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .requirement-index {
+    font-size: 13px;
+    padding: 9px;
+  }
+  .requirement-status {
+    margin-top: 11px;
+  }
+  .setup-module-top .el-tag {
+    font-size: 10px;
+  }
+}

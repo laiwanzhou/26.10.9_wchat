@@ -1,0 +1,12 @@
+<view class="resource-state">
+  <block wx:if="{{status==='loading'}}">
+    <view class="state-spinner"></view><view class="state-title">正在加载内容</view><view class="state-message">请稍候，内容正在准备中。</view>
+    <view class="skeleton"><view></view><view></view><view></view></view>
+  </block>
+  <block wx:elif="{{status==='error'}}">
+    <view class="state-symbol error">!</view><view class="state-title">加载失败</view><view class="state-message">{{message||'内容暂不可用，请重试。'}}</view><button class="state-button" bindtap="retry">重试加载</button>
+  </block>
+  <block wx:else>
+    <view class="state-symbol">◇</view><view class="state-title">{{title}}</view><view class="state-message">{{message||'正式资料待配置，稍后再来看看。'}}</view><button class="state-button" bindtap="retry">刷新内容</button>
+  </block>
+</view>

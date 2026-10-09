@@ -1,0 +1,13 @@
+<view class="screen">
+  <view class="eyebrow">EXAM PRACTICE</view>
+  <view class="page-title">考试题库刷题</view>
+  <view class="page-description">选择题型，进入对应答题页。<text>{{'\n'}}</text>先用静态题目，体验每一次练习。</view>
+  <view class="practice-tip"><text>✦</text><view><view>选择题与填空题，两种练习方式</view><text>选择选项或填写答案，提交后查看结果</text></view></view>
+  <view class="section-heading"><text class="section-title">选择刷题入口</text><text class="section-link">4 个入口</text></view>
+  <button wx:for="{{categories}}" wx:key="id" class="card practice-entry" data-id="{{item.id}}" bindtap="start" hover-class="practice-entry-active" aria-label="{{item.title}}，开始答题">
+    <text class="practice-mark {{item.color}}">{{item.mark}}</text>
+    <view class="practice-copy"><view>{{item.title}}</view><text>{{item.desc}}</text><view class="question-count">{{item.answerKind==='choice'?'选择题':'填空题'}} · {{item.count}} 道静态题</view></view>
+    <text class="arrow">›</text>
+  </button>
+  <view class="demo-note">静态题库 · 共 8 道示例题<text>{{'\n'}}</text>题库样本后续可替换，不依赖后端服务</view>
+</view>

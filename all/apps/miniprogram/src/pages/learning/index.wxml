@@ -1,0 +1,18 @@
+<view class="screen">
+  <view class="eyebrow">WORDS MAKE CONNECTIONS</view><view class="page-title">把话，说得更好。</view><view class="page-description">从一个字词开始，走近清楚、自信的表达。</view>
+  <page-state wx:if="{{status!=='ready'}}" status="{{status}}" title="学习资源待配置" message="{{errorMessage}}" bindretry="load" />
+  <block wx:else>
+    <view class="pill-tabs"><view class="pill-tab {{tab==='words'?'active':''}}" data-id="words" bindtap="tab">字典查询</view><view class="pill-tab {{tab==='videos'?'active':''}}" data-id="videos" bindtap="tab">学习视频</view></view>
+    <block wx:if="{{tab==='words'}}">
+      <view class="search-box"><text class="search-symbol">⌕</text><input value="{{keyword}}" bindinput="search" placeholder="搜索词语或拼音" maxlength="50" /><text wx:if="{{keyword}}" class="search-clear" bindtap="clear">×</text></view>
+      <view class="word-count">{{keyword?'搜索结果':'示例词条'}} · {{filteredWords.length}} 条</view>
+      <view wx:for="{{filteredWords}}" wx:key="id" class="card dictionary-card" data-id="{{item.id}}" bindtap="word"><view><view class="dictionary-title">{{item.text}}<text>{{item.pinyin}}</text></view><view class="dictionary-description">{{item.definition}}</view></view><text class="arrow">›</text></view>
+      <view wx:if="{{!filteredWords.length}}" class="empty"><view class="empty-mark">字</view><view class="empty-title">{{keyword?'没有找到这个词':'字典词条待配置'}}</view><view class="empty-desc">试试其他关键词，或等待正式词条资料。</view></view>
+    </block>
+    <block wx:else>
+      <view wx:for="{{lessons}}" wx:key="id" class="card lesson-card" bindtap="lesson"><view class="lesson-cover {{item.color}}"><text>{{item.mark}}</text><view class="play-circle">▶</view><view class="lesson-pending">视频资源待提供</view></view><view class="lesson-category">{{item.category}}</view><view class="lesson-title">{{item.title}}</view><view class="lesson-description">点击了解资源准备状态</view></view>
+      <page-state wx:if="{{!lessons.length}}" status="empty" title="视频课程待配置" bindretry="load" />
+    </block>
+  </block>
+  <view class="demo-note">本地学习展示样本 · 真实字典与视频待资料配置</view>
+</view>

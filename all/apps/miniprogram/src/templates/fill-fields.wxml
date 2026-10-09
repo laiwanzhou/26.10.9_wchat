@@ -1,0 +1,5 @@
+<view class="fill-answer">
+  <view class="answer-hint">填写空缺内容</view>
+  <input class="fill-input" value="{{answer}}" bindinput="input" disabled="{{submitted}}" placeholder="请输入你的答案" maxlength="100" cursor-spacing="36" confirm-type="done" />
+  <view class="input-note">填写后点击下方按钮提交</view>
+</view>

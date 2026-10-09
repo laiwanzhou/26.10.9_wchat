@@ -1,0 +1,13 @@
+<view class="answer-hint">请选择一个选项</view>
+<radio-group class="quiz-options {{type==='image'?'image-options':''}}" bindchange="radioChange">
+  <label wx:for="{{optionViews}}" wx:key="id" class="quiz-option {{item.state}} {{submitted?'locked':''}}">
+    <image wx:if="{{item.image}}" class="option-image" src="{{item.image}}" mode="aspectFill" aria-label="{{item.label}}示例图片" />
+    <view class="option-row">
+      <radio value="{{item.id}}" checked="{{item.selected}}" disabled="{{submitted}}" color="#397c5b" />
+      <text class="option-letter">{{item.letter}}</text>
+      <text class="option-label">{{item.label}}</text>
+      <text wx:if="{{submitted && item.state==='correct'}}" class="option-result">✓</text>
+      <text wx:if="{{submitted && item.state==='wrong'}}" class="option-result wrong-mark">×</text>
+    </view>
+  </label>
+</radio-group>

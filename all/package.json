@@ -1,0 +1,17 @@
+{
+  "name": "yanxi-platform",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.14.0",
+  "engines": { "node": ">=22.18.0" },
+  "scripts": {
+    "dev": "pnpm --filter admin dev",
+    "build": "pnpm --filter admin build && pnpm build:mini",
+    "build:mini": "pnpm --filter miniprogram build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm build:mini && node --test tests/*.test.mjs",
+    "verify:mini:templates": "node tools/verify-miniprogram.mjs",
+    "verify:contracts": "node tools/sync-contracts.mjs --check"
+  }
+}

@@ -1,0 +1,30 @@
+<view class="screen answer-screen">
+  <view wx:if="{{error}}" class="empty">
+    <view class="empty-title">{{error}}</view>
+    <button class="secondary-button error-back" bindtap="back">返回题库</button>
+  </view>
+  <block wx:elif="{{question}}">
+    <view class="quiz-status">
+      <text>{{title}}</text>
+      <text><text class="quiz-current">{{index+1}}</text> / {{total}}</text>
+    </view>
+    <view class="quiz-progress"><view style="width:{{progress}}%"></view></view>
+    <view class="quiz-card">
+      <view class="quiz-card-heading">
+        <text class="chip">{{answerKind==='choice'?'单项选择题':'填空题'}}</text>
+        <text class="sample-label">静态示例题</text>
+      </view>
+      <view class="quiz-stem">{{question.stem}}</view>
+      <block wx:if="{{answerKind==='choice'}}"><include src="./choice-fields.wxml" /></block>
+      <block wx:else><include src="./fill-fields.wxml" /></block>
+    </view>
+    <view wx:if="{{submitted}}" class="answer-feedback {{correct?'right':'wrong'}}">
+      <view class="feedback-title">{{correct?'✓ 回答正确':'× 回答错误，再巩固一下'}}</view>
+      <view class="standard-answer">标准答案：{{displayAnswer}}</view>
+      <view class="explanation">{{question.explanation}}</view>
+    </view>
+    <button wx:if="{{!submitted}}" class="primary-button submit-button" disabled="{{!canSubmit}}" bindtap="submit">提交答案</button>
+    <button wx:else class="primary-button" disabled="{{finished}}" bindtap="next">{{index+1===total?'查看练习结果':'下一题 →'}}</button>
+    <view class="demo-note">静态题库 · 答题记录仅保存在当前设备</view>
+  </block>
+</view>

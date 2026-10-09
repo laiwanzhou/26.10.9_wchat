@@ -1,0 +1,14 @@
+{
+  "name": "miniprogram",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "node ../../tools/sync-contracts.mjs && tsc && node ../../tools/build-miniprogram.mjs",
+    "typecheck": "node ../../tools/sync-contracts.mjs && tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "miniprogram-api-typings": "5.2.3"
+  }
+}

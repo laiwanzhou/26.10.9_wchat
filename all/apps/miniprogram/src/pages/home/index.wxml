@@ -1,0 +1,25 @@
+<view class="screen home-screen">
+  <view class="home-greeting">你好，今天也一起进步 <text class="greeting-dot">●</text></view>
+  <view class="home-shortcuts">
+    <button bindtap="practice"><text>练</text><view>题库刷题</view></button>
+    <button bindtap="learning"><text>学</text><view>普通话学习</view></button>
+    <button bindtap="voting"><text>赛</text><view>大赛投票</view></button>
+  </view>
+  <page-state wx:if="{{status!=='ready'}}" status="{{status}}" title="首页内容待配置" message="{{errorMessage}}" bindretry="load" />
+  <block wx:elif="{{home}}">
+    <view class="hero">
+      <image wx:if="{{home.banner && !bannerFailed}}" class="hero-cover" src="{{home.banner.url}}" mode="aspectFill" binderror="bannerError" />
+      <view class="hero-copy"><view class="eyebrow">LEARN A LITTLE EVERY DAY</view><view class="hero-title">{{home.title}}</view><view class="hero-desc">{{home.subtitle}}</view><view class="hero-link" bindtap="practice">开始今天的练习 <text>→</text></view></view>
+      <view wx:if="{{!home.banner || bannerFailed}}" class="hero-art"><view class="hero-ring"></view><text class="hero-character">言</text><text class="hero-small">习</text></view>
+      <view wx:if="{{bannerFailed}}" class="banner-fallback-note">图片暂不可用，已显示默认封面</view>
+    </view>
+    <view class="progress-strip"><view><text class="progress-number">{{answered}}</text><text>本地已答题</text></view><view class="progress-divider"></view><view><text class="progress-number">{{correct}}</text><text>本地答对题</text></view><text class="progress-caption">一点积累，一点成长</text></view>
+    <view class="section-heading"><text class="section-title">从这里开始</text><text class="section-link" bindtap="practice">全部练习 →</text></view>
+    <view class="category-grid"><view wx:for="{{categories}}" wx:key="id" class="category-card" data-id="{{item.id}}" bindtap="start"><text class="category-mark {{item.color}}">{{item.mark}}</text><view class="category-title">{{item.title}}</view><view class="category-caption">{{item.count}} 道静态题 <text>↗</text></view></view></view>
+    <view class="section-heading"><text class="section-title">每一天，学一个好词</text><text class="section-link" bindtap="learning">字典 →</text></view>
+    <view class="word-card" bindtap="word"><view><text class="word-main">{{word.text}}</text><text class="word-pinyin">{{word.pinyin}}</text><view class="word-definition">{{word.definition}}</view></view><text class="word-arrow">→</text></view>
+    <view class="competition-card" bindtap="voting"><view class="chip">语言大赛 · 展示预览</view><view class="competition-title">用声音，连接你我。</view><view class="competition-desc">遇见不同的声音，分享同样的热爱。</view><view class="competition-link">看看参赛选手 →</view><text class="competition-art">声</text></view>
+  </block>
+  <view class="preview-settings-link" bindtap="preview">页面展示预览设置 →</view>
+  <view class="demo-note">前端独立演示 · 图文来自本地预览配置</view>
+</view>

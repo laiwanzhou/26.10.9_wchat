@@ -1,0 +1,12 @@
+<view class="screen">
+  <view class="competition-heading"><view class="chip">语言大赛 · 展示预览</view><view class="page-title">{{title}}</view><view class="page-description">每一种声音，都有自己的故事。<text>{{'\n'}}</text>在这里，遇见表达的力量。</view><text class="competition-symbol">声</text></view>
+  <view class="vote-notice">真实投票尚未开放 · 后续按 IP 每日限额<text>{{'\n'}}</text>额度刷新时间：北京时间每天 04:00</view>
+  <page-state wx:if="{{status!=='ready'}}" status="{{status}}" title="参赛选手待配置" message="{{errorMessage}}" bindretry="load" />
+  <block wx:else>
+    <view class="search-box"><text class="search-symbol">⌕</text><input value="{{keyword}}" bindinput="search" placeholder="搜索选手姓名或编号" maxlength="40" /></view>
+    <view class="section-heading"><text class="section-title">认识参赛选手</text><text class="section-link">{{filtered.length}} 位示例选手</text></view>
+    <view class="candidate-grid"><view wx:for="{{filtered}}" wx:key="id" class="candidate-card" data-id="{{item.id}}" bindtap="detail"><view class="candidate-cover" style="background:{{item.color}}"><text>{{item.mark}}</text><view class="candidate-number">NO. {{item.number}}</view></view><view class="candidate-copy"><view class="candidate-name">{{item.name}}</view><view class="candidate-intro">{{item.intro}}</view><view class="candidate-link">了解选手 →</view></view></view></view>
+    <view wx:if="{{!filtered.length}}" class="empty"><view class="empty-title">没有匹配的选手</view><view class="empty-desc">试试其他姓名或编号。</view></view>
+  </block>
+  <view class="demo-note">选手姓名与简介为演示样本<text>{{'\n'}}</text>不提交真实投票</view>
+</view>

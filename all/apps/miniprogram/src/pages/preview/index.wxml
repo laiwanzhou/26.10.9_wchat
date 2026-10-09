@@ -1,0 +1,7 @@
+<view class="screen">
+  <view class="eyebrow">FRONTEND PREVIEW</view><view class="page-title">页面预览设置</view><view class="page-description">分别体验内容展示与不同加载状态。<text>{{'\n'}}</text>设置仅保存在当前小程序，未与管理网页同步。</view>
+  <view class="section-heading"><text class="section-title">展示场景</text></view>
+  <button wx:for="{{scenarios}}" wx:key="id" class="scenario-card {{settings.scenario===item.id?'selected':''}}" data-id="{{item.id}}" bindtap="scenario"><view><view>{{item.title}}</view><text>{{item.description}}</text></view><text>{{settings.scenario===item.id?'✓':'○'}}</text></button>
+  <view class="section-heading"><text class="section-title">首页图文配置</text></view><view class="card preview-form"><view class="form-label">首页标题</view><input value="{{settings.title}}" bindinput="title" maxlength="60" placeholder="请输入标题" /><view class="form-label">首页介绍</view><input value="{{settings.subtitle}}" bindinput="subtitle" maxlength="150" placeholder="请输入介绍" /><view class="form-label">展示图片</view><view class="banner-list"><button wx:for="{{banners}}" wx:key="id" class="banner-choice {{settings.banner===item.id?'selected':''}}" data-id="{{item.id}}" bindtap="banner"><image wx:if="{{item.url}}" src="{{item.url}}" mode="aspectFill" /><view wx:else class="no-image">◇</view><text>{{item.title}}{{settings.banner===item.id?' ✓':''}}</text></button></view></view>
+  <button class="primary-button" bindtap="save">保存并查看首页</button><button class="secondary-button reset-preview" bindtap="reset">恢复默认设置</button><view class="demo-note">这些配置用于独立前端演示<text>{{'\n'}}</text>真实后台配置将在服务接入后读取</view>
+</view>
