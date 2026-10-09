@@ -4,14 +4,26 @@
   "type": "module",
   "version": "0.1.0",
   "packageManager": "pnpm@10.14.0",
-  "engines": { "node": ">=22.18.0" },
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "scripts": {
     "dev": "pnpm --filter admin dev",
-    "build": "pnpm --filter admin build && pnpm build:mini",
+    "build": "pnpm --filter admin build && pnpm build:mini && pnpm --filter server build",
     "build:mini": "pnpm --filter miniprogram build",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm build:mini && node --test tests/*.test.mjs",
+    "test": "pnpm test:frontend && pnpm test:server",
+    "test:frontend": "pnpm build:mini && node --test tests/*.test.mjs",
+    "test:server": "pnpm --filter server test",
+    "dev:infra": "node tools/dev-infrastructure.mjs",
+    "dev:server": "pnpm --filter server dev",
+    "db:migrate": "node --env-file=.env tools/migrate.mjs",
+    "init:admin": "pnpm --filter server init:admin",
     "verify:mini:templates": "node tools/verify-miniprogram.mjs",
     "verify:contracts": "node tools/sync-contracts.mjs --check"
+  },
+  "devDependencies": {
+    "embedded-postgres": "17.6.0-beta.15",
+    "s3rver": "3.7.1"
   }
 }

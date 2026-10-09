@@ -151,9 +151,9 @@ pnpm test
 pnpm verify:mini:templates
 ```
 
-- `typecheck`：两端 TypeScript 类型检查。
-- `build`：生成管理网页 `apps\admin\dist` 和小程序 `apps\miniprogram\dist`。
-- `test`：先重新构建小程序，再验证本地仓库、文件头检查、判分、统计及编译后的刷题页面流程。
+- `typecheck`：后台、小程序与服务端 TypeScript 类型检查。
+- `build`：生成管理网页、小程序以及服务端编译产物（Build Artifacts）。
+- `test`：前端测试后运行真实 PostgreSQL 与本地 S3 兼容服务的 HTTP 集成测试（Integration Tests）；也可分别执行 `test:frontend`、`test:server`。
 - `verify:contracts`：检查 `shared/contracts.ts` 与小程序生成契约一致；不得手工修改 `src/contracts/generated.ts`。
 - `verify:mini:templates`：检查页面文件、标签、表达式语法、页面 JSON、标签页路由以及共享模板引用；属于静态结构检查（Static Validation），不替代微信原生模板编译。
 
@@ -181,3 +181,55 @@ pnpm verify:mini:templates
 新增模块配置状态总览：
 
 ![模块配置状态总览](./admin-configuration-preview.jpg)
+
+## 8. 首页真实服务试验（Home Service Trial）
+
+本节描述新增服务模式（Service Mode）。此前章节的账号、本地缓存和预览说明只适用于演示模式（Demo Mode）。完整范围和接口以唯一 plan 第 10 节为准。
+
+### 无 Docker 的本地启动（Local Startup）
+
+在 `D:\work\26.10.9\all` 安装依赖后，按以下顺序操作：
+
+1. 第一个终端运行 `pnpm dev:infra` 并保持运行。工具在 `.runtime/development` 启动实际 PostgreSQL 17.6 与本地 S3 测试服务，配置写入被 Git 忽略的 `.env`，重复启动保留数据。首次生成随机管理员密码，不在终端输出。
+2. 第二个终端依次运行 `pnpm db:migrate`、`pnpm --filter server build`、`pnpm init:admin`、`pnpm dev:server`。数据库迁移（Migration）可重复运行；管理员初始化不会覆盖已有密码。
+3. 第三个终端运行 `pnpm dev`，打开 `http://127.0.0.1:5173`。已有开发服务需重启以读取 `.env` 中的 `VITE_ADMIN_MODE=service`。管理员账号密码在本机 `.env` 中查看，不要提交或截图分享该文件。
+4. 在“图片资源”上传图片，在“首页配置”选择图片并保存标题与介绍。首页与图片保存到服务；题库、学习、投票和概览中的示例统计仍是本地演示。
+
+服务默认端口 3000，依赖端口 55432、59000。如端口被占用，先处理占用或调整工具配置；不自动结束无关进程。私有图片通过同源 `/api/admin` 代理预览，公开首页图片地址由 `PUBLIC_BASE_URL` 生成。首次数据库没有首页配置时，公开首页返回 null，小程序显示空状态。
+
+Windows 下运行中的 Prisma 服务会锁定引擎文件。重新生成客户端、类型检查或构建之前，先停止 `dev:server`，检查结束后再启动；不要强制删除 DLL。
+
+本地 S3 服务（S3rver）只用于开发／测试，生产使用实际 S3 兼容存储与私有桶（Private Bucket）。服务上传会实际解码并重新编码为 PNG；格式和大小限制详见唯一 plan，上传文件名不是对象路径。
+
+### 小程序首页接入（Mini Program Home Integration）
+
+在 `all` 的 PowerShell 终端执行：
+
+```powershell
+$env:MINI_HOME_MODE = 'http'
+$env:MINI_API_BASE_URL = 'http://127.0.0.1:3000'
+pnpm build:mini
+```
+
+然后在微信开发者工具导入 `all/apps/miniprogram` 并重新编译。上述地址只适用于本机开发者工具；真机要使用手机可访问的局域网或 HTTPS 地址，同时将 `.env` 的 `PUBLIC_BASE_URL` 改为手机可访问地址并重启后端，让首页图片地址也可访问。微信网络域名设置与真机操作仍需单独验收。
+
+此开关只让首页请求真实接口，其他模块继续使用样本。配置写入构建产物，不修改源文件或 AppID；测试与普通构建默认是 Mock。在同一终端恢复默认构建时，移除这两个任务环境变量后重新构建。
+
+### 容器与服务器准备（Container / Server Preparation）
+
+`apps/server/Dockerfile` 包含后台静态页面与 Node 服务，`infra/compose.yaml` 包含 PostgreSQL、迁移和管理员初始化任务。`infra/nginx.conf.example` 是 HTTPS 反向代理（Reverse Proxy）模板。生产运行服务不持有管理员初始化密码。
+
+正式环境另行准备 `.env`：数据库密码 `POSTGRES_PASSWORD` 使用 URL 安全字符，配置真实私有桶、存储密钥、HTTPS 公开地址与管理地址；本阶段管理页面采用同源部署。开发工具生成的本机地址和测试存储凭证不能直接用于该环境。
+
+以下命令是部署准备步骤（Preparation），执行前应按唯一 plan 核对目标环境；本轮未在目标服务器执行：
+
+```powershell
+docker compose --env-file .env -f infra/compose.yaml up -d database
+docker compose --env-file .env -f infra/compose.yaml run --rm migrate
+docker compose --env-file .env -f infra/compose.yaml run --rm init-admin
+docker compose --env-file .env -f infra/compose.yaml --profile app up -d server
+```
+
+配置真实域名、证书和私有对象存储后验证就绪接口。数据库尚未迁移或存储不可用时 `/api/health/ready` 返回 503。数据库使用命名卷（Named Volume）；备份恢复与升级回退尚未演练，不运行带卷删除的清理命令。
+
+Linux 自动检查（CI）定义在 `.github/workflows/verify.yml`，覆盖干净安装、类型检查、构建、测试、模板、契约和 Docker 镜像构建。工作流文件存在不等于运行成功，实际结果需要单独确认。

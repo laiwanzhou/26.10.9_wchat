@@ -1,0 +1,28 @@
+name: 项目验证
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  linux-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: all
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+          cache: pnpm
+          cache-dependency-path: all/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm test
+      - run: pnpm verify:mini:templates
+      - run: pnpm verify:contracts
+      - run: docker build -f apps/server/Dockerfile -t yanxi-home-check .

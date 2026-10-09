@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+model Administrator {
+  id String @id @default(uuid())
+  username String @unique
+  passwordHash String
+  sessions Session[]
+}
+model Session {
+  tokenHash String @id
+  administratorId String
+  administrator Administrator @relation(fields: [administratorId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  @@index([expiresAt])
+}
+model ImageAsset {
+  id String @id @default(uuid())
+  name String
+  objectKey String @unique
+  mime String
+  size Int
+  createdAt DateTime @default(now())
+  home HomeConfig?
+}
+model HomeConfig {
+  id String @id @default("home")
+  title String
+  subtitle String
+  bannerAssetId String? @unique
+  banner ImageAsset? @relation(fields: [bannerAssetId], references: [id], onDelete: Restrict)
+}
+model ObjectDeletion {
+  objectKey String @id
+  createdAt DateTime @default(now())
+}

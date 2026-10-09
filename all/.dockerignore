@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+.runtime
+.audit
+tools/.cache
+.env
+.env.*
+!.env.example
+**/project.private.config.json
+**/*.log

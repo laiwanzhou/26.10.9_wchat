@@ -37,9 +37,9 @@ function httpTransport(options: RequestOptions): Promise<TransportResponse> {
 }
 export const request = createRequestClient(
   (options) =>
-    frontendConfig.mode === "mock"
-      ? mockTransport(options)
-      : httpTransport(options),
+    frontendConfig.mode === "http" || (frontendConfig.homeMode === "http" && options.path === "/api/public/home")
+      ? httpTransport(options)
+      : mockTransport(options),
   frontendConfig.timeoutMs,
 );
 export { RequestError };

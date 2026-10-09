@@ -1,0 +1,65 @@
+# 部署准备（Deployment Preparation）：使用已创建的私有 S3 桶，不创建公开桶。
+# [PRE-LAUNCH:PL-04/PL-05/PL-06] 目标服务器须实测 TLS、存储兼容性、镜像构建、备份恢复。
+services:
+  database:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_USER: yanxi
+      POSTGRES_DB: yanxi
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?请配置数据库密码}
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U yanxi -d yanxi"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+  server:
+    build:
+      context: ..
+      dockerfile: apps/server/Dockerfile
+    environment:
+      NODE_ENV: production
+      SERVE_ADMIN: 'true'
+      DATABASE_URL: postgresql://yanxi:${POSTGRES_PASSWORD}@database:5432/yanxi?connect_timeout=3
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?请配置 HTTPS 公开地址}
+      ADMIN_ORIGIN: ${ADMIN_ORIGIN:?请配置 HTTPS 管理地址}
+      S3_ENDPOINT: ${S3_ENDPOINT:?请配置对象存储地址}
+      S3_BUCKET: ${S3_BUCKET:?请配置私有桶}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?请配置访问密钥}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?请配置存储密钥}
+      S3_REGION: ${S3_REGION:-us-east-1}
+    ports:
+      - '127.0.0.1:3000:3000'
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles: [app]
+  migrate:
+    build:
+      context: ..
+      dockerfile: apps/server/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://yanxi:${POSTGRES_PASSWORD}@database:5432/yanxi?connect_timeout=3
+    command: [pnpm, --filter, server, exec, prisma, migrate, deploy]
+    depends_on:
+      database:
+        condition: service_healthy
+    profiles: [tools]
+  init-admin:
+    build:
+      context: ..
+      dockerfile: apps/server/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://yanxi:${POSTGRES_PASSWORD}@database:5432/yanxi?connect_timeout=3
+      ADMIN_USERNAME: ${ADMIN_USERNAME:?请配置初始化账号}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?请配置初始化密码}
+    command: [node, apps/server/dist/apps/server/src/init-admin.js]
+    depends_on:
+      database:
+        condition: service_healthy
+    profiles: [tools]
+volumes:
+  database:

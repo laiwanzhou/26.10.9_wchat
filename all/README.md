@@ -1,6 +1,8 @@
-# 言习前端演示（Frontend Demo）
+# 言习平台（Yanxi Platform）
 
-微信原生小程序与 Vue 管理网页分别运行，使用独立本地演示数据。当前阶段没有后端服务（Backend）、数据库（Database）或网络数据同步。
+微信原生小程序与 Vue 管理网页已提供独立演示模式（Demo Mode）及首页服务模式（Service Mode）。新增 NestJS 后端（Backend）、PostgreSQL 数据库（Database）和 S3 兼容图片存储：首页与图片可真实同步，题库、学习与投票仍为本地演示。
+
+唯一实施计划（Single Plan）位于 `../docs/2026-10-09-wechat-platform-plan.md`，真实服务启动、随机管理员初始化及小程序 HTTP 首页构建见 `../docs/development-guide.md` 第 8 节。以下普通启动说明适用于演示模式；已有 `.env` 可切换服务模式。正式服务器部署和微信真机仍待验收。
 
 ## 启动网页
 

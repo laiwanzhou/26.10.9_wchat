@@ -4,6 +4,8 @@ import { useRoute, useRouter } from "vue-router";
 import AppIcon from "../components/AppIcon.vue";
 import { signOut } from "../stores/demo";
 import { moduleSetup } from "../data/module-setup";
+import { serviceMode, logoutService } from "../services/platform";
+import { ElMessage } from "element-plus";
 const route = useRoute(),
   router = useRouter(),
   open = ref(false);
@@ -22,7 +24,18 @@ const activePath = computed(() =>
 const pendingModule = computed(() =>
   Object.values(moduleSetup).find((info) => info.path === route.path),
 );
-function logout() {
+async function logout() {
+  if (serviceMode) {
+    try {
+      await logoutService();
+      await router.push("/login");
+    } catch (error) {
+      ElMessage.error(
+        error instanceof Error ? error.message : "退出失败，请重试",
+      );
+    }
+    return;
+  }
   signOut();
   router.push("/login");
 }
@@ -55,12 +68,22 @@ function logout() {
         ></RouterLink>
       </nav>
       <div class="sidebar-note">
-        <span class="status-dot"></span>前端演示环境
-        <p>内容仅保存在当前浏览器<br />后端服务将在后续接入</p>
+        <span class="status-dot"></span
+        >{{ serviceMode ? "首页服务已接入" : "前端演示环境" }}
+        <p>
+          {{ serviceMode ? "首页与图片通过服务保存" : "内容仅保存在当前浏览器"
+          }}<br />{{
+            serviceMode
+              ? "题库、学习和投票仍为本地演示"
+              : "后端服务将在后续接入"
+          }}
+        </p>
       </div>
       <button class="sidebar-user" @click="logout">
         <span class="avatar">管</span
-        ><span>演示管理员<small>退出演示登录</small></span
+        ><span
+          >{{ serviceMode ? "管理员" : "演示管理员"
+          }}<small>退出登录</small></span
         ><AppIcon name="logout" :size="17" />
       </button>
     </aside>
@@ -78,7 +101,9 @@ function logout() {
           }}</strong>
         </div>
         <div class="topbar-right">
-          <span class="demo-pill">本地演示</span
+          <span class="demo-pill">{{
+            serviceMode ? "服务模式" : "本地演示"
+          }}</span
           ><span class="topbar-divider"></span
           ><span class="avatar small">管</span
           ><span class="desktop-label">管理员</span>

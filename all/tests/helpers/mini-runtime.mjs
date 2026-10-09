@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import vm from "node:vm";
 const root = resolve(import.meta.dirname, "../../apps/miniprogram/dist");
-export function createMiniRuntime(responses) {
+export function createMiniRuntime(responses, config = {}) {
   let page;
   const cache = new Map(),
     storage = new Map(),
@@ -21,6 +21,12 @@ export function createMiniRuntime(responses) {
     request: (options) => {
       networkCalls.push(options);
       if (responses) {
+        if (typeof responses === "function") {
+          Promise.resolve(responses(options))
+            .then(options.success)
+            .catch((error) => options.fail({ errMsg: error.message }));
+          return;
+        }
         const value = responses[new URL(options.url).pathname];
         options.success(
           value === undefined
@@ -70,6 +76,7 @@ export function createMiniRuntime(responses) {
     const env = load(resolve(root, "config/env.js"));
     env.frontendConfig.mode = "http";
     env.frontendConfig.apiBaseUrl = "https://test.invalid";
+    Object.assign(env.frontendConfig, config);
   }
   return { loadPage, storage, toasts, navigations, networkCalls };
 }

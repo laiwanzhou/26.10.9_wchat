@@ -1,0 +1,37 @@
+{
+  "name": "server",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "generate": "prisma generate",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "typecheck": "prisma generate && tsc --noEmit",
+    "dev": "pnpm build && node --env-file=../../.env dist/apps/server/src/main.js",
+    "start": "node dist/apps/server/src/main.js",
+    "migrate": "prisma migrate deploy",
+    "init:admin": "node --env-file=../../.env dist/apps/server/src/init-admin.js",
+    "test": "pnpm build && node --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1148.0",
+    "@nestjs/common": "12.1.2",
+    "@nestjs/core": "12.1.2",
+    "@nestjs/platform-express": "12.1.2",
+    "@prisma/client": "6.19.3",
+    "prisma": "6.19.3",
+    "cookie-parser": "1.4.7",
+    "express": "5.2.1",
+    "helmet": "8.1.0",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2",
+    "sharp": "0.35.5"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "1.4.10",
+    "@types/express": "5.0.6",
+    "@types/multer": "2.0.0",
+    "@types/node": "22.19.15",
+    "typescript": "5.9.3"
+  }
+}

@@ -85,6 +85,46 @@ export interface HomeContent {
   subtitle: string;
   banner: { id: string; url: string } | null;
 }
+// [CONTRACT:C-02/C-04] 管理端服务模式、server 首页读写与小程序公开首页必须一起修改。
+export interface HomeConfig {
+  title: string;
+  subtitle: string;
+  bannerAssetId: string | null;
+}
+export interface AdminIdentity {
+  username: string;
+}
+export function decodeHomeConfig(value: unknown): HomeConfig {
+  const row = dto(value, "首页配置");
+  if (row.bannerAssetId !== null && typeof row.bannerAssetId !== "string")
+    throw Error("首页配置格式异常：bannerAssetId");
+  return {
+    title: stringField(row, "title", "首页配置"),
+    subtitle: stringField(row, "subtitle", "首页配置"),
+    bannerAssetId: row.bannerAssetId as string | null,
+  };
+}
+export function decodeIdentity(value: unknown): AdminIdentity {
+  return { username: stringField(dto(value, "管理员"), "username", "管理员") };
+}
+export function decodeAsset(value: unknown): ImageAsset {
+  const row = dto(value, "图片");
+  if (!Number.isInteger(row.size) || (row.size as number) <= 0)
+    throw Error("图片格式异常：size");
+  return {
+    id: stringField(row, "id", "图片"),
+    name: stringField(row, "name", "图片"),
+    url: stringField(row, "url", "图片"),
+    mime: stringField(row, "mime", "图片"),
+    size: row.size as number,
+    createdAt: stringField(row, "createdAt", "图片"),
+  };
+}
+export function decodeAssets(value: unknown): ImageAsset[] {
+  const row = dto(value, "图片列表");
+  if (!Array.isArray(row.items)) throw Error("图片列表格式异常");
+  return row.items.map(decodeAsset);
+}
 export interface LearningContent {
   words: WordContent[];
   lessons: VideoContent[];

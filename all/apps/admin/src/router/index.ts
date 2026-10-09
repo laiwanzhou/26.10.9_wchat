@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 import { isSignedIn } from "../stores/demo";
 import AdminLayout from "../layouts/AdminLayout.vue";
+import { serviceMode, getIdentity } from "../services/platform";
 const router = createRouter({
   history: createWebHashHistory(),
   scrollBehavior: () => ({ top: 0, left: 0 }),
@@ -70,8 +71,21 @@ const router = createRouter({
     { path: "/:pathMatch(.*)*", redirect: "/dashboard" },
   ],
 });
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
+  if (serviceMode) {
+    if (to.path === "/login") return;
+    try {
+      await getIdentity();
+      return;
+    } catch {
+      return "/login";
+    }
+  }
   if (to.path !== "/login" && !isSignedIn()) return "/login";
   if (to.path === "/login" && isSignedIn()) return "/dashboard";
+});
+window.addEventListener("yanxi-session-expired", () => {
+  if (router.currentRoute.value.path !== "/login")
+    void router.replace("/login");
 });
 export default router;

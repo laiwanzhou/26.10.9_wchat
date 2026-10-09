@@ -1,16 +1,42 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { demo, saveDemo, newId } from "../stores/demo";
 import { validateImage } from "../domain/local-repository";
 import AppIcon from "../components/AppIcon.vue";
 import { assetReferences } from "../domain/content-model";
+import {
+  serviceMode,
+  getServiceAssets,
+  uploadServiceAsset,
+  deleteServiceAsset,
+} from "../services/platform";
+import type { ImageAsset } from "../../../../shared/contracts";
+const remoteAssets = ref<ImageAsset[]>([]),
+  loading = ref(false),
+  problem = ref("");
+async function load() {
+  loading.value = true;
+  problem.value = "";
+  try {
+    remoteAssets.value = await getServiceAssets();
+  } catch (error) {
+    problem.value = error instanceof Error ? error.message : "读取失败";
+  } finally {
+    loading.value = false;
+  }
+}
+onMounted(() => {
+  if (serviceMode) void load();
+});
 const picker = ref<HTMLInputElement>(),
   uploading = ref(false),
   keyword = ref(""),
   preview = ref("");
 const assets = computed(() =>
-  demo.value.assets.filter((a) => a.name.includes(keyword.value.trim())),
+  (serviceMode ? remoteAssets.value : demo.value.assets).filter((a) =>
+    a.name.includes(keyword.value.trim()),
+  ),
 );
 function dataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -27,6 +53,12 @@ async function upload(event: Event) {
   if (!file) return;
   uploading.value = true;
   try {
+    if (serviceMode) {
+      await uploadServiceAsset(file);
+      await load();
+      ElMessage.success("图片已上传至服务端");
+      return;
+    }
     const mime = validateImage(
       new Uint8Array(await file.slice(0, 12).arrayBuffer()),
       file.size,
@@ -53,23 +85,35 @@ async function upload(event: Event) {
   }
 }
 async function remove(id: string) {
-  const references = assetReferences(demo.value, id);
+  const references = serviceMode ? [] : assetReferences(demo.value, id);
   if (references.length) {
     ElMessage.warning("图片仍在使用：" + references.join("、"));
     return;
   }
   // [PRE-LAUNCH:PL-04] 服务端也必须原子检查引用，不能只信任本地检查结果。
   try {
-    await ElMessageBox.confirm("确认删除这张未被引用的本地图片？", "删除图片", {
-      confirmButtonText: "删除",
-      cancelButtonText: "取消",
-    });
+    await ElMessageBox.confirm(
+      serviceMode
+        ? "确认删除这张图片？服务端会检查首页引用。"
+        : "确认删除这张未被引用的本地图片？",
+      "删除图片",
+      {
+        confirmButtonText: "删除",
+        cancelButtonText: "取消",
+      },
+    );
+    if (serviceMode) {
+      await deleteServiceAsset(id);
+      await load();
+      ElMessage.success("图片已删除");
+      return;
+    }
     saveDemo((d) => {
       d.assets = d.assets.filter((a) => a.id !== id);
       if (d.home.bannerAssetId === id) d.home.bannerAssetId = null;
     });
-  } catch {
-    /* 用户取消 */
+  } catch (error) {
+    if (error instanceof Error) ElMessage.error(error.message);
   }
 }
 </script>
@@ -95,10 +139,18 @@ async function remove(id: string) {
     />
   </div>
   <div class="module-notice">
-    仅支持 JPEG、PNG、WebP，单张不超过 5
-    MiB。图片暂存当前浏览器，总容量取决于浏览器；后续接入对象存储。
+    仅支持 JPEG、PNG、WebP，单张不超过 5 MiB。{{
+      serviceMode
+        ? "图片通过服务上传并保存；仅首页引用的图片可公开读取。"
+        : "图片暂存当前浏览器，总容量取决于浏览器；后续接入对象存储。"
+    }}
   </div>
   <section class="panel">
+    <p v-if="loading" class="muted">正在读取图片…</p>
+    <div v-if="problem" role="alert">
+      <p>{{ problem }}</p>
+      <el-button @click="load">重新读取</el-button>
+    </div>
     <div class="filter-row">
       <el-input
         v-model="keyword"
@@ -136,7 +188,7 @@ async function remove(id: string) {
         </div>
       </article>
     </div>
-    <div v-else class="upload-empty">
+    <div v-else-if="!loading && !problem" class="upload-empty">
       <span class="empty-image-icon"><AppIcon name="image" :size="36" /></span>
       <h3>{{ keyword ? "没有匹配的图片" : "你的第一张图片，从这里开始" }}</h3>
       <p>

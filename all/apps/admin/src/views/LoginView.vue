@@ -4,11 +4,25 @@ import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { signIn } from "../stores/demo";
 import AppIcon from "../components/AppIcon.vue";
+import { serviceMode, loginService } from "../services/platform";
 const username = ref(""),
   password = ref(""),
   busy = ref(false),
   router = useRouter();
-function login() {
+async function login() {
+  if (serviceMode) {
+    if (busy.value) return;
+    busy.value = true;
+    try {
+      await loginService(username.value.trim(), password.value);
+      await router.push("/dashboard");
+    } catch (error) {
+      ElMessage.error(error instanceof Error ? error.message : "登录失败");
+    } finally {
+      busy.value = false;
+    }
+    return;
+  }
   // [PRE-LAUNCH:PL-01] 演示账号仅用于本地页面；与 stores/demo、真实 /api/admin/auth/login/me/logout、Cookie 会话和 401 处理一起替换。
   if (username.value.trim() !== "admin" || password.value !== "demo2026") {
     ElMessage.error("演示账号或密码不正确");
@@ -67,12 +81,15 @@ function login() {
           class="login-button"
           >进入工作台 <AppIcon name="arrow"
         /></el-button>
-        <div class="login-demo">
+        <div v-if="!serviceMode" class="login-demo">
           <strong>本地演示账号</strong
           ><span>账号 <code>admin</code>　密码 <code>demo2026</code></span
           ><small>仅用于页面体验，尚未接入真实身份认证。</small>
         </div>
-        <span class="login-copyright">言习管理平台 · 前端独立演示</span>
+        <p v-else class="muted">使用服务端初始化的管理员账号登录。</p>
+        <span class="login-copyright"
+          >言习管理平台 · {{ serviceMode ? "服务模式" : "前端独立演示" }}</span
+        >
       </form>
     </section>
   </div>

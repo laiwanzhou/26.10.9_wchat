@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { demo } from "../stores/demo";
 import { questionTypes } from "../data/seed";
 import AppIcon from "../components/AppIcon.vue";
+import { serviceMode } from "../services/platform";
 const stats = computed(() => [
   {
     label: "题库内容",
@@ -29,7 +30,7 @@ const stats = computed(() => [
     note: "本地示例选手资料",
   },
   {
-    label: "图片资源",
+    label: serviceMode ? "本地示例图片" : "图片资源",
     value: demo.value.assets.length,
     unit: "张",
     icon: "image",
@@ -51,7 +52,11 @@ const typeCounts = computed(() =>
       <h1>工作台概览</h1>
       <p>内容、资源与活动，在这里一目了然。</p>
     </div>
-    <span class="date-label">前端演示 · 数据独立保存</span>
+    <span class="date-label">{{
+      serviceMode
+        ? "以下统计为本地演示模块；服务端图片请到图片资源查看"
+        : "前端演示 · 数据独立保存"
+    }}</span>
   </div>
   <section class="welcome-banner">
     <div>
